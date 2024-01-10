@@ -1,4 +1,6 @@
 package com.example.newspaper.domain.usecase
 
-class GetSearchedNewsUseCase {
+import com.example.newspaper.domain.repository.NewsRespository
+
+class GetSearchedNewsUseCase (private val newsRespository: NewsRespository){
 }
