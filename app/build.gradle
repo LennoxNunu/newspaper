@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
     id 'com.google.dagger.hilt.android'
+    id 'androidx.navigation.safeargs.kotlin'
 }
 
 android {
@@ -36,12 +37,19 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    buildFeatures{
+        viewBinding = true
+    }
 }
 
 dependencies {
 
     kapt 'com.google.dagger:hilt-android-compiler:2.44'
     kapt 'androidx.lifecycle:lifecycle-compiler:2.7.0'
+
+    // Kotlin
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.7.6'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.7.6'
 
     //Hilt
     implementation 'com.google.dagger:hilt-android:2.44'
