@@ -8,8 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AbsListView
 import android.widget.Toast
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.newspaper.data.model.Article
 import com.example.newspaper.databinding.FragmentNewsBinding
 import com.example.newspaper.presentation.adapter.NewsAdapter
 import com.example.newspaper.presentation.viewmodel.NewsViewModel
@@ -38,6 +40,15 @@ class NewsFragment : Fragment() {
         fragmentNewsBinding = FragmentNewsBinding.bind(view)
         viewModel= (activity as MainActivity).viewmodel
         newsAdapter= (activity as MainActivity).newsAdapter
+        newsAdapter.setOnItemClickListener {
+            val bundle = Bundle().apply {
+                putSerializable("selected_article",it)
+            }
+            findNavController().navigate(
+                R.id.action_newsFragment_to_infoFragment
+                ,bundle
+            )
+        }
         initRecyclerView()
         viewNewsList()
     }
