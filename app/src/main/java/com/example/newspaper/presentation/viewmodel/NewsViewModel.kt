@@ -12,19 +12,21 @@ import androidx.lifecycle.viewModelScope
 import com.example.newspaper.data.model.APIResponse
 import com.example.newspaper.data.util.Resource
 import com.example.newspaper.domain.usecase.GetNewsHeadlinesUseCase
+import com.example.newspaper.domain.usecase.GetSearchedNewsUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class NewsViewModel(
     private val app: Application,
-    private val getNewsHeadlinesUseCase: GetNewsHeadlinesUseCase
+    private val getNewsHeadlinesUseCase: GetNewsHeadlinesUseCase,
+    private val getSearchedNewsUseCase: GetSearchedNewsUseCase
 ) : AndroidViewModel(app){
     val newsHeadLines: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
 
     fun getNewsHeadLines(country: String, page: Int) = viewModelScope.launch(Dispatchers.IO) {
         newsHeadLines.postValue(Resource.Loading())
         try{
-            if(isNetworkAvailable(app)) {
+            if(isInternetAvailable(app)) {
 
                 val apiResult = getNewsHeadlinesUseCase.execute(country, page)
                 newsHeadLines.postValue(apiResult)
@@ -38,32 +40,60 @@ class NewsViewModel(
 
     }
 
-    private fun isNetworkAvailable(context: Context?):Boolean{
-        if (context == null) return false
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-            if (capabilities != null) {
-                when {
-                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
-                        return true
-                    }
-                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
-                        return true
-                    }
-                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
-                        return true
+
+    //search
+    val searchedNews : MutableLiveData<Resource<APIResponse>> = MutableLiveData()
+
+    fun searchNews(
+        country: String,
+        searchQuery : String,
+        page: Int
+    ) = viewModelScope.launch {
+        searchedNews.postValue(Resource.Loading())
+        try {
+            if (isInternetAvailable(app)) {
+                val response = getSearchedNewsUseCase.execute(
+                    country,
+                    searchQuery,
+                    page
+                )
+                searchedNews.postValue(response)
+            } else {
+                searchedNews.postValue(Resource.Error("No internet connection"))
+            }
+        }catch(e:Exception){
+            searchedNews.postValue(Resource.Error(e.message.toString()))
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    fun isInternetAvailable(context: Context): Boolean {
+        var result = false
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            cm?.run {
+                cm.getNetworkCapabilities(cm.activeNetwork)?.run {
+                    result = when {
+                        hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                        hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                        hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+                        else -> false
                     }
                 }
             }
         } else {
-            val activeNetworkInfo = connectivityManager.activeNetworkInfo
-            if (activeNetworkInfo != null && activeNetworkInfo.isConnected) {
-                return true
+            cm?.run {
+                cm.activeNetworkInfo?.run {
+                    if (type == ConnectivityManager.TYPE_WIFI) {
+                        result = true
+                    } else if (type == ConnectivityManager.TYPE_MOBILE) {
+                        result = true
+                    }
+                }
             }
         }
-        return false
-
+        return result
     }
+
 
 }
