@@ -1,6 +1,7 @@
 package com.example.newspaper.presentation.di
 
 import com.example.newspaper.data.repository.NewsRepositoryImpl
+import com.example.newspaper.data.repository.dataSource.NewsLocalDataSource
 import com.example.newspaper.data.repository.dataSource.NewsRemoteDataSource
 import com.example.newspaper.domain.repository.NewsRepository
 import dagger.Module
@@ -15,9 +16,10 @@ class RepositoryModule {
     @Singleton
     @Provides
     fun provideNewsRepository(
-        newsRemoteDataSource: NewsRemoteDataSource
+        newsRemoteDataSource: NewsRemoteDataSource,
+        newsLocalDataSource: NewsLocalDataSource
     ): NewsRepository {
-        return NewsRepositoryImpl(newsRemoteDataSource)
+        return NewsRepositoryImpl(newsRemoteDataSource,newsLocalDataSource)
     }
 
 }
