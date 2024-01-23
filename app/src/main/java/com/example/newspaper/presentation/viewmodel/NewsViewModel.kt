@@ -9,10 +9,7 @@ import androidx.lifecycle.*
 import com.example.newspaper.data.model.APIResponse
 import com.example.newspaper.data.model.Article
 import com.example.newspaper.data.util.Resource
-import com.example.newspaper.domain.usecase.GetNewsHeadlinesUseCase
-import com.example.newspaper.domain.usecase.GetSavedNewsUseCase
-import com.example.newspaper.domain.usecase.GetSearchedNewsUseCase
-import com.example.newspaper.domain.usecase.SaveNewsUseCase
+import com.example.newspaper.domain.usecase.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -21,7 +18,8 @@ class NewsViewModel(
     private val getNewsHeadlinesUseCase: GetNewsHeadlinesUseCase,
     private val getSearchedNewsUseCase: GetSearchedNewsUseCase,
     private val saveNewsUseCase: SaveNewsUseCase,
-    private val getSavedNewsUseCase: GetSavedNewsUseCase
+    private val getSavedNewsUseCase: GetSavedNewsUseCase,
+    private val deleteSavedNewsUseCase: DeleteSavedNewsUseCase
 ) : AndroidViewModel(app){
     val newsHeadLines: MutableLiveData<Resource<APIResponse>> = MutableLiveData()
 
@@ -107,6 +105,10 @@ class NewsViewModel(
         getSavedNewsUseCase.execute().collect {
             emit(it)
         }
+    }
+
+    fun deleteArticle(article: Article) = viewModelScope.launch {
+        deleteSavedNewsUseCase.execute(article)
     }
 
 }
